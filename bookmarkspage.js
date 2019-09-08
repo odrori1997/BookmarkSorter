@@ -91,15 +91,18 @@ function searchTags(e) {
 				console.log(chrome.runtime.lastError.message);
 
 			let obj = JSON.parse(bookmarks[tags[i]]);
+			console.log(obj);
 
-			if (bookmarks)
-				chrome.bookmarks.search(obj.url, function(results) {
-					if (chrome.runtime.lastError)
-						console.log(chrome.runtime.lastError.message);
-					else
-						loadBookmarks(results);
-				});
-
+			if (bookmarks) {
+				for (let j = 0; j < obj.url.length; j++) {
+					chrome.bookmarks.search(obj.url[j].key, function(results) {
+						if (chrome.runtime.lastError)
+							console.log(chrome.runtime.lastError.message);
+						else
+							loadBookmarks(results);
+					});
+			}
+		}
 		});
 	}
 }

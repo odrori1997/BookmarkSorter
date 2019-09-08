@@ -7,7 +7,7 @@ let tagInput = [];
 // get url of current selected tag
 chrome.tabs.query({'active': true, 'lastFocusedWindow': true}, function (tabs) {
 		url = tabs[0].url;
-		console.log(url);
+		// console.log(url);
 });
 
 function openPage(e) {
@@ -80,36 +80,49 @@ function addMark(e) {
 		// 	console.log("Storage cleared.");
 		// });
 
-		// in testing
-		var url = JSON.stringify({'url' : [ {'url1': bookmark.url} ]});
-		// in testing
-
 		// original:
 		// var url = JSON.stringify({'url': bookmark.url});
 		var json = {};
 		// console.log(json.url);
 
-		for (let tag of tags) {
+		for (let i = 0; i < tags.length; i++) {
 
-			json[tag] = url;
+			let ind = i.toString();
+			
+			var url = JSON.stringify({'url' : [ { key : bookmark.url } ]});
+			json[tags[i]] = url;
 
 
 			// in testing
-			chrome.storage.sync.get( tag, function(item) {
+			chrome.storage.sync.get( tags[i], function(item) {
 				if (chrome.runtime.lastError) {
 					chrome.storage.sync.set( json , function() {
 					// alert(tag + " " + json.url + " saved.");
-					console.log("saved.", tag, url);
+					// console.log("saved.", tags[i], url);
 			
 					});
 				}
+				else if (item[tags[i]]) {
+					console.log(item[tags[i]]);
+					let obj = JSON.parse(item[tags[i]]);
+					// console.log(obj);
+					// let newKey = 'url'.concat(obj.url.length.toString());
+					obj.url.push({key : bookmark.url});
+					// console.log(newKey + " : " + bookmark.url + " pushed.");
+					json[tags[i]] = JSON.stringify(obj);
+					chrome.storage.sync.set( json, function() {
+						// console.log("saved.", tags[i], url);
+					});
+					chrome.storage.sync.get(tags[i], function(result) {
+							console.log(result);
+					});
+				}
 				else {
-					let obj = JSON.parse(item[tag]);
-					obj.url.push(obj.url.length, bookmark.url);
-
-					chrome.storage.sync.set(, function() {
-						console.log("saved.", tag, url);
-					})
+					chrome.storage.sync.set( json , function() {
+					// alert(tag + " " + json.url + " saved.");
+					// console.log("saved.", tags[i], url);
+			
+					});
 				}
 			});
 			// in testing
