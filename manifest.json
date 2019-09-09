@@ -23,6 +23,7 @@
 	}
 	],
 	"browser_action": {
+		"default_title": "Add Tags to your Bookmarks",
 		"default_icon": "icon.png",
 		"default_popup": "popup.html"
 	}
