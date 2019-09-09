@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			tagInput = input;
 			input.addEventListener("keyup", function(e) {
 				if (e.key == "Enter")
-					searchTags(e);
+					searchTags();
 			});
 		}
 	}
@@ -106,7 +106,7 @@ function deleteBookmark() {
 	
 }
 
-function searchTags(e) {
+function searchTags() {
 	let tags = [];
 	let startInd = 0;
 

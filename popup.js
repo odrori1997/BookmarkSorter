@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 });
 
-function addMark(e) {
+function addMark() {
 
 	// open 'add bookmark' popup
 	// tags are comma-separated
@@ -80,8 +80,7 @@ function addMark(e) {
 		// 	console.log("Storage cleared.");
 		// });
 
-		// original:
-		// var url = JSON.stringify({'url': bookmark.url});
+
 		var json = {};
 		// console.log(json.url);
 
@@ -106,7 +105,7 @@ function addMark(e) {
 					console.log(item[tags[i]]);
 					let obj = JSON.parse(item[tags[i]]);
 					// console.log(obj);
-					// let newKey = 'url'.concat(obj.url.length.toString());
+
 					obj.url.push({key : bookmark.url});
 					// console.log(newKey + " : " + bookmark.url + " pushed.");
 					json[tags[i]] = JSON.stringify(obj);
@@ -125,14 +124,7 @@ function addMark(e) {
 					});
 				}
 			});
-			// in testing
 
-			// original:
-			// chrome.storage.sync.set( json , function() {
-			// // alert(tag + " " + json.url + " saved.");
-			// 	console.log("saved.", tag, url);
-			
-			// });
 		}
 	});
 	
