@@ -130,10 +130,13 @@ function searchTags() {
 			if (chrome.runtime.lastError)
 				console.log(chrome.runtime.lastError.message);
 
-			let obj = JSON.parse(bookmarks[tags[i]]);
-			console.log(obj);
+			
 
 			if (bookmarks) {
+
+				let obj = JSON.parse(bookmarks[tags[i]]);
+				console.log(obj);
+
 				for (let j = 0; j < obj.url.length; j++) {
 					chrome.bookmarks.search(obj.url[j].key, function(results) {
 						if (chrome.runtime.lastError)
@@ -141,8 +144,15 @@ function searchTags() {
 						else
 							loadBookmarks(results);
 					});
+				}
 			}
-		}
+
+			chrome.bookmarks.search(tags[i], function(results) {
+				if (chrome.runtime.lastError)
+					console.log(chrome.runtime.lastError.message);
+				else
+					loadBookmarks(results);
+			});
 		});
 	}
 }
