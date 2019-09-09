@@ -2,18 +2,40 @@
 <html>
 	<head>
 		<title>Bookmark Popup</title>
-		<style></style>
+		<style>
+			body {
+				text-align: center;
+				font-family: "Georgia";
+				font-weight: bold;
+				opacity: 0.8
+				background-color: #ea8c80;
+				background: url("./squares.png") repeat center center;
+				background-size: cover;
+			}
+			#Image {
+				width: 100px;
+				height: 50px;
+				border-radius: 50%;
+			}
+
+			button {
+				margin: 5px;
+				outline: none;
+			}
+
+			button:hover {
+				outline: #80DEEA dotted thick;
+			}
+		</style>
 	</head>
 	<body>
-		<div id="root">
-			
-		</div>
+		<img src="./arttag.png" id="Image">
 		<br>Add Title:</br>
 		<input type="text" id="title">
 		<br>Add Tag:</br>
 		<input type="text" id="tag">
-		<button id="add">Add Bookmark</button>
-		<button id="open">Open Bookmarks Page</button>
+		<button id="add">Add</button>
+		<button id="open">View</button>
 		<script src="popup.js"></script>
 	</body>
 </html>
