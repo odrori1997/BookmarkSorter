@@ -1,27 +1,20 @@
 let tagInput = [];
 
-
 document.addEventListener('DOMContentLoaded', function() {
-	
 
 	let inputs = document.querySelectorAll('input');
 	for (let input of inputs) {
 		if (input.id == "searchTags") {
 			input.addEventListener("click", searchTags);
 		}
-		else if (input.id == "newFolder") {
-
-		}
-
-		else if (input.id == "delete") {
-
-		}
 		else if (input.id == "tagsToSearch") {
 			tagInput = input;
+			input.addEventListener("keyup", function(e) {
+				if (e.key == "Enter")
+					searchTags(e);
+			});
 		}
-
 	}
-
 
 });
 
@@ -47,8 +40,8 @@ let BookMarkTree = chrome.bookmarks.getTree(function (bookmarkTree) {
 });
 
 function loadBookmarks(bookmarkTreeNodes) {
-	let ul = document.createElement("ul");
-	document.body.appendChild(ul);
+	let ul = document.getElementById("list");
+
 	for (let i = 0; i < bookmarkTreeNodes.length; i++) {
 		console.log(bookmarkTreeNodes[i]);
 		let bookmarkListItem = document.createElement("li");
@@ -56,14 +49,61 @@ function loadBookmarks(bookmarkTreeNodes) {
 		bookmarkListItem.appendChild(data);
 		ul.appendChild(bookmarkListItem);
 
-		bookmarkListItem.addEventListener("click", function(event) {
-			if (bookmarkTreeNodes[i].url)
-				window.open(bookmarkTreeNodes[i].url);
+		// Create a "close", "open", and "edit tags" button for each list item
+		if (!bookmarkTreeNodes[i].url) {
+			var spanFolder = document.createElement("span");
+			var txtFolder = document.createTextNode("\uD83D\uDDC0");
+			spanFolder.className = "folder";
+			spanFolder.appendChild(txtFolder);
+			bookmarkListItem.appendChild(spanFolder);
+		}
 
+		else {
+			var spanOpen = document.createElement("open");
+			var txtOpen = document.createTextNode("\uD83D\uDD17");
+			spanOpen.className = "open";
+			spanOpen.appendChild(txtOpen);
+			bookmarkListItem.appendChild(spanOpen);
+		}
+
+		var spanClose = document.createElement("span");
+		var txtClose = document.createTextNode("\u00D7");
+		spanClose.className = "close";
+		spanClose.appendChild(txtClose);
+		bookmarkListItem.appendChild(spanClose);
+
+		
+
+		
+
+		// add Event listeners
+
+		bookmarkListItem.addEventListener("click", function(event) {
 			chrome.bookmarks.getChildren(bookmarkTreeNodes[i].id, loadBookmarks) == null;
 				
 		});
+
+		spanClose.onclick = function() {
+			let div = this.parentElement;
+			div.style.display = "none";
+			// remove bookmark from chrome too
+
+			chrome.bookmarks.remove(bookmarkTreeNodes[i].id);
+		}
+		if (spanOpen) {
+			spanOpen.onclick = function() {
+				if (bookmarkTreeNodes[i].url)
+					window.open(bookmarkTreeNodes[i].url);
+			}
+		}
+		
 	}
+
+}
+
+function deleteBookmark() {
+
+	
 }
 
 function searchTags(e) {
@@ -106,4 +146,5 @@ function searchTags(e) {
 		});
 	}
 }
+
 

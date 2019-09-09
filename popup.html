@@ -5,7 +5,8 @@
 		<style>
 			body {
 				text-align: center;
-				font-family: "Georgia";
+				text-shadow: 1px 1px 1px #ccc;
+				font-family: "Helvetica";
 				font-weight: bold;
 				opacity: 0.8
 				background-color: #ea8c80;
@@ -21,19 +22,40 @@
 			button {
 				margin: 5px;
 				outline: none;
+				padding: 10px;
+				background: #d9d9d9;
+				color: #555;
+				text-align: center;
+				font-size: 12px;
+				cursor: pointer;
+				transition: 0.3s;
+				border-radius: 0;
+				border: none;
 			}
 
 			button:hover {
 				outline: #80DEEA dotted thick;
 			}
+			input {
+				margin: 5px;
+				border: none;
+				border-radius: 0;
+				width: 75%;
+				padding: 10px;
+				float: center;
+				font-size: 12px;
+			}
+
+			.header:after {
+				content: "";
+				clear: both;
+			}
 		</style>
 	</head>
 	<body>
 		<img src="./arttag.png" id="Image">
-		<br>Add Title:</br>
-		<input type="text" id="title">
-		<br>Add Tag:</br>
-		<input type="text" id="tag">
+		<input type="text" id="title" placeholder="Add Title...">
+		<input type="text" id="tag" placeholder="Add Tag...">
 		<button id="add">Add</button>
 		<button id="open">View</button>
 		<script src="popup.js"></script>

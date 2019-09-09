@@ -2,16 +2,116 @@
 <html>
 	<head>
 		<title>Sorted Bookmarks</title>
-		<style></style>
+		<style>
+			* {
+				box-sizing: border-box;
+			}
+			body {
+				background: url("./beanstalk.png");
+
+			}
+			ul {
+				margin: 0;
+				padding: 0;
+			}
+			ul li {
+				cursor: pointer;
+				position: relative;
+				padding: 12px 8px 12px 40px;
+				background: #eee;
+				font-size: 18px;
+				transition: 0.2s;
+
+				-webkit-user-select: none;
+				user-select: none;
+			}
+
+			ul li:nth-child(odd) {
+				background: #f9f9f9;
+			}
+			ul li:hover {
+				background: #ddd;
+			}
+
+			ul li.selected {
+				background: #888;
+				color: #fff;
+			}
+			.tagsToSearch {
+				margin: 0px;
+				padding: 10px;
+				border: none;
+				border-radius: 0;
+				width: 50%;
+				float: left;
+				font-size: 16px;
+			}
+
+			.close {
+				position: absolute;
+				right: 0;
+				top: 0;
+				padding: 12px 16px 12px 16px;
+			}
+			.close:hover {
+				background-color: #f44336;
+				color: white;
+			}
+
+			.open {
+				position: absolute;
+				right: 32px;
+				top: 0px;
+				padding: 12px 16px 12px 16px;
+			}
+			.open:hover {
+				opacity: 0.5;
+			}
+
+			.header:after {
+				content: "";
+				display: table;
+				clear: both;
+			}
+			.folder {
+				position: absolute;
+				left: 0;
+				top: 0;
+				padding: 12px 16px 12px 16px;
+			}
+			.searchTags {
+				padding: 10px;
+				width: 10%;
+				background: #d9d9d9;
+				color: #555;
+				float: left;
+				text-align: center;
+				font-size: 16px;
+				cursor: pointer;
+				transition: 0.3s;
+				border-radius: 0;
+			}
+			.searchTags:hover {
+				background-color: #bbb;
+			}
+			.header {
+				padding: 30px 40px;
+			}
+			.root {
+				margin: 5px;
+			}
+		</style>
 	</head>
 	<script src="bookmarkspage.js"></script>
 	<body>
+		<div class="header">
+			<h2>My Bookmarks</h2>
+			<input type="text" class="tagsToSearch" id="tagsToSearch" placeholder="Search Tags...">
+			<!-- <input type="submit" class="searchTags" id="searchTags" value="Search"> -->
+		</div>
 		<div id="root">
-			<br>Search Tags</br>
-			<input type="text" id="tagsToSearch">
-			<input type="submit" id="searchTags" value="Search">
-			<input type="submit" id="newFolder" value="Create New Folder">
-			<input type="submit" id="delete" value="Delete">
+			<ul id="list">
+			</ul>
 		</div>
 
 		
