@@ -5,7 +5,8 @@
 	"permissions": [
 		"bookmarks",
 		"tabs",
-		"storage"
+		"storage",
+		"activeTab"
 	],
 	"chrome_url_overrides": {
 		"bookmarks": "bookmarkspage.html"
