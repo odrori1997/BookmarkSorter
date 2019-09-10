@@ -49,7 +49,7 @@ function addMark() {
 	for (let i = 0; i < rawTags.length; i++) {
 		if (rawTags[i] == ',') {
 			tags.push(rawTags.slice(startInd, i).trim());
-
+			startInd = i + 1;
 		}
 	}
 
@@ -81,10 +81,38 @@ function addMark() {
 		// });
 
 
+		var jsonURL = {};
+		// var jsontagURL = [];
+		var jsontagURL = JSON.stringify({'tag': [ { tag: tags[0] } ] });
+		jsonURL[bookmark.url] = jsontagURL;
+		let jsonobjURL = JSON.parse(jsonURL[bookmark.url]);
+
+		chrome.storage.sync.set( jsonURL );
+
 		var json = {};
 		// console.log(json.url);
 
 		for (let i = 0; i < tags.length; i++) {
+
+			// first, store url : tag pair
+			// console.log(jsonobjURL.tag[0].tag);
+			// console.log(jsonobjURL.tag.filter(t => t.tag != tags[i]));
+			// jsonobjURL.tag.map(t => console.log(t.tag));
+			if (jsonobjURL.tag.filter(t => t.tag === tags[i]).length === 0) {
+				jsonobjURL.tag.push({ tag: tags[i] });
+				jsonURL[bookmark.url] = JSON.stringify(jsonobjURL);
+
+				// console.log(jsonURL[bookmark.url]);
+				chrome.storage.sync.set( jsonURL, function() {
+
+				});
+
+			}
+
+			// chrome.storage.sync.get(bookmark.url, function(result) {
+			// 	console.log((result));
+			// });
+			// now, store tag: url pair
 
 			let ind = i.toString();
 			
@@ -102,7 +130,7 @@ function addMark() {
 					});
 				}
 				else if (item[tags[i]]) {
-					console.log(item[tags[i]]);
+					// console.log(item[tags[i]]);
 					let obj = JSON.parse(item[tags[i]]);
 					// console.log(obj);
 
@@ -112,9 +140,9 @@ function addMark() {
 					chrome.storage.sync.set( json, function() {
 						// console.log("saved.", tags[i], url);
 					});
-					chrome.storage.sync.get(tags[i], function(result) {
-							console.log(result);
-					});
+					// chrome.storage.sync.get(tags[i], function(result) {
+					// 		console.log(result);
+					// });
 				}
 				else {
 					chrome.storage.sync.set( json , function() {
