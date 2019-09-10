@@ -139,18 +139,29 @@ function loadBookmarks(bookmarkTreeNodes) {
 				chrome.bookmarks.getChildren(bookmarkTreeNodes[i].id, function(results) {
 					if (chrome.runtime.lastError)
 						console.log(chrome.runtime.lastError.message);
-					loadBookmarks(results);
+
+					if (!bookmarkTreeNodes[i].url) {
+						let newUL = document.createElement("ul");
+						ul.parentNode.removeChild(ul);
+						newUL.id = "list";
+						document.body.appendChild(newUL);
+						loadedMarks = [];
+						
+						loadBookmarks(results);
+					}
 				});
 					
 			});
 
 			spanClose.onclick = function() {
 				let div = this.parentElement;
-				div.style.display = "none";
+				console.log(div);
+				bookmarkListItem.style.display = "none";
 
 				for (let mark in loadedMarks) {
-					if (bookmarkTreeNodes[i].url === mark)
+					if (bookmarkTreeNodes[i].url === mark) {
 						delete mark;
+					}
 				}
 
 				let promise = new Promise((resolve) =>
@@ -310,6 +321,14 @@ function editTags(bookmark, remove) {
 }
 
 function searchTags() {
+	let ul = document.getElementById("list");
+	let newUL = document.createElement("ul");
+	ul.parentNode.removeChild(ul);
+	newUL.id = "list";
+	document.body.appendChild(newUL);
+	loadedMarks = [];
+
+
 	let tags = [];
 	let startInd = 0;
 
