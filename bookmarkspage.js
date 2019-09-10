@@ -189,16 +189,25 @@ function editTags(bookmark, remove) {
 				console.log(chrome.runtime.lastError.message)
 
 			if (bookmark) {
-				if (results) {
+
+				var tagString = [];
+
+				if (results[bookmark.url]) {
 					let obj = JSON.parse(results[bookmark.url]);
 
-					var tagString = obj.tag[0].tag;
+					tagString = obj.tag[0].tag;
 					let i = 1;
 					while (i < obj.tag.length) {
 						tagString = tagString + ", " + obj.tag[i].tag;
 						i++;
 					}
+				}
+				// if bookmark exists, but no results in storage, then this is a prevoius bookmark from chrome. load an empty tags dialogue for 
+				// this bookmark.
 
+				else {
+					tagString = "";
+				}
 					if (!remove)
 						var newTags = prompt(bookmark.title + " has the following tags: ", tagString);
 					else
@@ -295,7 +304,6 @@ function editTags(bookmark, remove) {
 						});
 
 					}
-			}
 									
 		}
 	});
