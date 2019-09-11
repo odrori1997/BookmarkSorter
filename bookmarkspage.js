@@ -161,9 +161,19 @@ function loadBookmarks(bookmarkTreeNodes) {
 						delete mark;
 					}
 				}
+				
 				// remove tags and url from storage
-				editTags(bookmarkTreeNodes[i], true); 
-				chrome.bookmarks.remove(bookmarkTreeNodes[i].id);
+
+				var promise = new Promise(function(resolve, reject) {
+					editTags(bookmarkTreeNodes[i], true);
+					resolve();
+					if (chrome.runtime.lastError)
+						reject();
+				});
+
+				promise.then(function() {chrome.bookmarks.remove(bookmarkTreeNodes[i].id);}, function() {console.log("Error.");});
+				// editTags(bookmarkTreeNodes[i], true); 
+				// chrome.bookmarks.remove(bookmarkTreeNodes[i].id);
 
 			}
 
@@ -282,7 +292,6 @@ function editTags(bookmark, remove) {
 				json[tags[i]] = url;
 
 
-				// in testing
 				chrome.storage.sync.get( tags[i], function(item) {
 					if (chrome.runtime.lastError) {
 						chrome.storage.sync.set( json , function() {
