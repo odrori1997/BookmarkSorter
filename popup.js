@@ -1,22 +1,25 @@
-'use strict';
+// author: Omer Drori
 
-// initialize variables
+
+
+'use strict';
 
 var url;
 let tagInput = [];
-// get url of current selected tag
+
+// get url of current selected tab
 chrome.tabs.query({'active': true, 'lastFocusedWindow': true}, function (tabs) {
 		url = tabs[0].url;
-		// console.log(url);
 });
 
+// open bookmarks page
 function openPage(e) {
 	var absolutePath = chrome.runtime.getURL("bookmarkspage.html");
 	var BookmarksPage = window.open(absolutePath);
 }
 
 
-
+// add event listeners 
 document.addEventListener('DOMContentLoaded', function() {
 	var inputs = document.querySelectorAll('input');
 		for (var i = 0; i < inputs.length; i++) {
@@ -32,12 +35,32 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 });
 
+
+document.addEventListener('DOMContentLoaded', function() {
+	var buttons = document.querySelectorAll('button');
+		for (var i = 0; i < buttons.length; i++) {
+
+			if (buttons[i].id == 'add') {
+				buttons[i].addEventListener('click', addMark);
+			}
+			else {
+				buttons[i].addEventListener('click', openPage);
+			}
+		}
+});
+
+
+/*
+	- adds current tab url to chrome bookmarks
+	- adds two objects to storage (in JSON format):
+		-a tag: url pair
+		-a url: tag pair
+*/
+
 function addMark() {
 
-	// open 'add bookmark' popup
 	// tags are comma-separated
 
-	// var absolutePath = chrome.runtime.getURL("addURLpage.html");
 
 	let rawTags = tagInput.value;
 	// console.log(rawTags);
@@ -45,6 +68,8 @@ function addMark() {
 
 	let title = document.getElementById("title").value;
 	let tags = [];
+
+	// separate tags by comma
 	let startInd = 0;
 	for (let i = 0; i < rawTags.length; i++) {
 		if (rawTags[i] == ',') {
@@ -76,13 +101,14 @@ function addMark() {
 		let bookmark = bookmarkTreeNode[0];
 		// console.log(bookmark);
 
+
+		// To clear storage on chrome: 
 		// chrome.storage.sync.clear(function() {
 		// 	console.log("Storage cleared.");
 		// });
 
 
 		var jsonURL = {};
-		// var jsontagURL = [];
 		var jsontagURL = JSON.stringify({'tag': [ { tag: tags[0] } ] });
 		jsonURL[bookmark.url] = jsontagURL;
 		let jsonobjURL = JSON.parse(jsonURL[bookmark.url]);
@@ -92,12 +118,12 @@ function addMark() {
 		var json = {};
 		// console.log(json.url);
 
+
 		for (let i = 0; i < tags.length; i++) {
 
 			// first, store url : tag pair
 			// console.log(jsonobjURL.tag[0].tag);
 			// console.log(jsonobjURL.tag.filter(t => t.tag != tags[i]));
-			// jsonobjURL.tag.map(t => console.log(t.tag));
 			if (jsonobjURL.tag.filter(t => t.tag === tags[i]).length === 0) {
 				jsonobjURL.tag.push({ tag: tags[i] });
 				jsonURL[bookmark.url] = JSON.stringify(jsonobjURL);
@@ -109,9 +135,11 @@ function addMark() {
 
 			}
 
+			// for error checking:
 			// chrome.storage.sync.get(bookmark.url, function(result) {
 			// 	console.log((result));
 			// });
+
 			// now, store tag: url pair
 
 			let ind = i.toString();
@@ -120,7 +148,7 @@ function addMark() {
 			json[tags[i]] = url;
 
 
-			// in testing
+			
 			chrome.storage.sync.get( tags[i], function(item) {
 				if (chrome.runtime.lastError) {
 					chrome.storage.sync.set( json , function() {
@@ -160,17 +188,3 @@ function addMark() {
 
 
 }
-
-document.addEventListener('DOMContentLoaded', function() {
-	var buttons = document.querySelectorAll('button');
-		for (var i = 0; i < buttons.length; i++) {
-
-			if (buttons[i].id == 'add') {
-				buttons[i].addEventListener('click', addMark);
-			}
-			else {
-				buttons[i].addEventListener('click', openPage);
-			}
-		}
-});
-

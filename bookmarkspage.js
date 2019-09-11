@@ -1,12 +1,20 @@
+// author: Omer Drori
+
+// tagInput is used to read in tags from the input field
 let tagInput = [];
+// loadedMarks keeps track of which bookmarks are currently loaded into the window
 var loadedMarks = [];
 
+// add homepage icon
 let home = document.createElement("span");
 let txtHome = document.createTextNode("\u2302");
 home.appendChild(txtHome);
 home.className = "home";
 
 
+/*
+	-add event listeners for homepage, input fields
+*/
 document.addEventListener('DOMContentLoaded', function() {
 
 	let header = document.getElementById("header");
@@ -31,23 +39,6 @@ document.addEventListener('DOMContentLoaded', function() {
 			tagInput = input;
 			input.addEventListener("keyup", function(e) {
 				if (e.key == "Enter") {
-				// 	let promise = new Promise(function(resolve, reject) {
-						
-				// 		let results = searchTags();
-				// 		if (results.length > 0)
-				// 			resolve(results);
-				// 		// else
-				// 		// 	reject(console.log("No results returned"));
-
-
-				// 	});
-
-				// 	promise.then(function(results) {
-				// 		loadBookmarks(results);
-				// 	}, function(err) {
-				// 		console.log(err);
-				// 	});
-
 					searchTags();
 				}
 			});
@@ -58,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-
+// clear current listing and load homepage
 function loadHome() {
 	chrome.bookmarks.getTree(function (bookmarkTree) {
 		chrome.bookmarks.getChildren(bookmarkTree[0].id, function (results) {
@@ -71,6 +62,11 @@ function loadHome() {
 
 loadHome();
 
+
+/*
+	-loads bookmarks & their icons into current window
+	-params: bookmarkTreeNodes, an array of bookmark objects
+*/
 function loadBookmarks(bookmarkTreeNodes) {
 	let ul = document.getElementById("list");
 
@@ -99,6 +95,7 @@ function loadBookmarks(bookmarkTreeNodes) {
 			ul.appendChild(bookmarkListItem);
 
 			// Create a "close", "open", and "edit tags" button for each list item
+			// Add a folder icon next to folders
 			if (!bookmarkTreeNodes[i].url) {
 				var spanFolder = document.createElement("span");
 				var txtFolder = document.createTextNode("\uD83D\uDDC0");
@@ -154,6 +151,7 @@ function loadBookmarks(bookmarkTreeNodes) {
 			});
 
 			spanClose.onclick = function() {
+
 				let div = this.parentElement;
 				console.log(div);
 				bookmarkListItem.style.display = "none";
@@ -163,16 +161,9 @@ function loadBookmarks(bookmarkTreeNodes) {
 						delete mark;
 					}
 				}
-
-				let promise = new Promise((resolve) =>
-					{
-						editTags(bookmarkTreeNodes[i], true); 
-						resolve(true);
-					});
-				promise.then(chrome.bookmarks.remove(bookmarkTreeNodes[i].id)).catch(function() {console.log("Error");});
-
-
-
+				// remove tags and url from storage
+				editTags(bookmarkTreeNodes[i], true); 
+				chrome.bookmarks.remove(bookmarkTreeNodes[i].id);
 
 			}
 
@@ -193,134 +184,150 @@ function loadBookmarks(bookmarkTreeNodes) {
 
 }
 
+
+/*
+	-edits or removes a given bookmarks tags in storage
+	-params: 
+		-bookmark: the bookmark to edit
+		-remove: boolean, true if bookmark is being deleted
+*/
 function editTags(bookmark, remove) {
 
-		chrome.storage.sync.get(bookmark.url, function(results) {
-			if (chrome.runtime.lastError)
-				console.log(chrome.runtime.lastError.message)
+	chrome.storage.sync.get(bookmark.url, function(results) {
+		if (chrome.runtime.lastError)
+			console.log(chrome.runtime.lastError.message)
 
-			if (bookmark) {
+		if (bookmark) {
 
-				var tagString = [];
+			var tagString = [];
 
-				if (results[bookmark.url]) {
-					let obj = JSON.parse(results[bookmark.url]);
+			if (results[bookmark.url]) {
+				let obj = JSON.parse(results[bookmark.url]);
 
-					tagString = obj.tag[0].tag;
-					let i = 1;
-					while (i < obj.tag.length) {
-						tagString = tagString + ", " + obj.tag[i].tag;
-						i++;
-					}
+				tagString = obj.tag[0].tag;
+				let i = 1;
+				while (i < obj.tag.length) {
+					tagString = tagString + ", " + obj.tag[i].tag;
+					i++;
 				}
-				// if bookmark exists, but no results in storage, then this is a prevoius bookmark from chrome. load an empty tags dialogue for 
-				// this bookmark.
+			}
 
-				else {
-					tagString = "";
+			// if bookmark exists, but no results in storage, then this is a prevoius bookmark from chrome. load an empty tags dialogue for 
+			// this bookmark.
+
+			else {
+				tagString = "";
+			}
+
+			if (!remove)
+				var newTags = prompt(bookmark.title + " has the following tags: ", tagString);
+			else
+				newTags = "";
+			// console.log(newTags);
+
+			// if user hits cancel, just return
+			if (newTags == null) {
+				return;
+			}
+
+			// store new tag: url and url: tag pairs
+
+			let tags = [];
+			let startInd = 0;
+			for (let i = 0; i < newTags.length; i++) {
+				if (newTags[i] == ',') {
+					tags.push(newTags.slice(startInd, i).trim());
+					startInd = i+1;
 				}
-					if (!remove)
-						var newTags = prompt(bookmark.title + " has the following tags: ", tagString);
-					else
-						newTags = "";
-					// console.log(newTags);
-					// if user hits cancel, just return
-					if (newTags == null) {
-						return;
-					}
+			}
 
-					// store new tag: url and url: tag pairs
+			if (newTags)
+				tags.push(newTags.slice(startInd).trim());
 
-					let tags = [];
-					let startInd = 0;
-					for (let i = 0; i < newTags.length; i++) {
-						if (newTags[i] == ',') {
-							tags.push(newTags.slice(startInd, i).trim());
-							startInd = i+1;
-						}
-					}
+			var jsonURL = {};
+			
+			var jsontagURL = JSON.stringify({'tag': [ { tag: tags[0] } ] });
+			jsonURL[bookmark.url] = jsontagURL;
+			let jsonobjURL = JSON.parse(jsonURL[bookmark.url]);
 
-					if (newTags)
-						tags.push(newTags.slice(startInd).trim());
+			chrome.storage.sync.set( jsonURL );
 
-					var jsonURL = {};
-					
-					var jsontagURL = JSON.stringify({'tag': [ { tag: tags[0] } ] });
-					jsonURL[bookmark.url] = jsontagURL;
-					let jsonobjURL = JSON.parse(jsonURL[bookmark.url]);
+			var json = {};
 
-					chrome.storage.sync.set( jsonURL );
+			for (let i = 0; i < tags.length; i++) {
 
-					var json = {};
+				// first, store url : tag pair
+				// console.log(jsonobjURL.tag[0].tag);
+				// console.log(jsonobjURL.tag.filter(t => t.tag != tags[i]));
+				// jsonobjURL.tag.map(t => console.log(t.tag));
+				if (jsonobjURL.tag.filter(t => t.tag === tags[i]).length === 0) {
+					jsonobjURL.tag.push({ tag: tags[i] });
+					jsonURL[bookmark.url] = JSON.stringify(jsonobjURL);
 
-					for (let i = 0; i < tags.length; i++) {
+					// console.log(jsonURL[bookmark.url]);
+					chrome.storage.sync.set( jsonURL, function() {
 
-						// first, store url : tag pair
-						// console.log(jsonobjURL.tag[0].tag);
-						// console.log(jsonobjURL.tag.filter(t => t.tag != tags[i]));
-						// jsonobjURL.tag.map(t => console.log(t.tag));
-						if (jsonobjURL.tag.filter(t => t.tag === tags[i]).length === 0) {
-							jsonobjURL.tag.push({ tag: tags[i] });
-							jsonURL[bookmark.url] = JSON.stringify(jsonobjURL);
+					});
 
-							// console.log(jsonURL[bookmark.url]);
-							chrome.storage.sync.set( jsonURL, function() {
+				}
 
-							});
+				// chrome.storage.sync.get(bookmark.url, function(result) {
+				// 	console.log((result));
+				// });
+				// now, store tag: url pair
 
-						}
-
-						// chrome.storage.sync.get(bookmark.url, function(result) {
-						// 	console.log((result));
-						// });
-						// now, store tag: url pair
-
-						let ind = i.toString();
-						
-						var url = JSON.stringify({'url' : [ { key : bookmark.url } ]});
-						json[tags[i]] = url;
+				let ind = i.toString();
+				
+				var url = JSON.stringify({'url' : [ { key : bookmark.url } ]});
+				json[tags[i]] = url;
 
 
-						// in testing
-						chrome.storage.sync.get( tags[i], function(item) {
-							if (chrome.runtime.lastError) {
-								chrome.storage.sync.set( json , function() {
-								// alert(tag + " " + json.url + " saved.");
-								// console.log("saved.", tags[i], url);
-						
-								});
-							}
-							else if (item[tags[i]]) {
-								// console.log(item[tags[i]]);
-								let obj = JSON.parse(item[tags[i]]);
-								// console.log(obj);
-
-								obj.url.push({key : bookmark.url});
-								// console.log(newKey + " : " + bookmark.url + " pushed.");
-								json[tags[i]] = JSON.stringify(obj);
-								chrome.storage.sync.set( json, function() {
-									// console.log("saved.", tags[i], url);
-								});
-								// chrome.storage.sync.get(tags[i], function(result) {
-								// 		console.log(result);
-								// });
-							}
-							else {
-								chrome.storage.sync.set( json , function() {
-								// alert(tag + " " + json.url + " saved.");
-								// console.log("saved.", tags[i], url);
-						
-								});
-							}
+				// in testing
+				chrome.storage.sync.get( tags[i], function(item) {
+					if (chrome.runtime.lastError) {
+						chrome.storage.sync.set( json , function() {
+						// alert(tag + " " + json.url + " saved.");
+						// console.log("saved.", tags[i], url);
+				
 						});
-
 					}
-									
+					else if (item[tags[i]]) {
+						// console.log(item[tags[i]]);
+						let obj = JSON.parse(item[tags[i]]);
+						// console.log(obj);
+
+						obj.url.push({key : bookmark.url});
+						// console.log(newKey + " : " + bookmark.url + " pushed.");
+						json[tags[i]] = JSON.stringify(obj);
+						chrome.storage.sync.set( json, function() {
+							// console.log("saved.", tags[i], url);
+						});
+						// chrome.storage.sync.get(tags[i], function(result) {
+						// 		console.log(result);
+						// });
+					}
+					else {
+						chrome.storage.sync.set( json , function() {
+						// alert(tag + " " + json.url + " saved.");
+						// console.log("saved.", tags[i], url);
+				
+						});
+					}
+				});
+
+			}
+								
 		}
 	});
 }
 
+/*
+	-loads bookmarks that match a given search query by title, url, and tags 
+	-params: reads query from input field
+*/
 function searchTags() {
+
+	// clear the page to make room for searched bookmarks
 	let ul = document.getElementById("list");
 	let newUL = document.createElement("ul");
 	ul.parentNode.removeChild(ul);
@@ -347,6 +354,8 @@ function searchTags() {
 
 	// var searchResults = [];
 
+	// for each comma-separated query, first match by tag, then title/url
+
 	for (let i = 0; i < tags.length; i++) {
 		chrome.storage.sync.get(tags[i], function(bookmarks){
 
@@ -357,22 +366,26 @@ function searchTags() {
 			
 
 			if (bookmarks) {
+				if (bookmarks[tags[i]]) {
+					let obj = JSON.parse(bookmarks[tags[i]]);
+					console.log(obj);
+				
+					for (let j = 0; j < obj.url.length; j++) {
+						chrome.bookmarks.search(obj.url[j].key, function(results) {
+							if (chrome.runtime.lastError)
+								console.log(chrome.runtime.lastError.message);
+							else {
+								loadBookmarks(results);
 
-				let obj = JSON.parse(bookmarks[tags[i]]);
-				// console.log(obj);
-
-				for (let j = 0; j < obj.url.length; j++) {
-					chrome.bookmarks.search(obj.url[j].key, function(results) {
-						if (chrome.runtime.lastError)
-							console.log(chrome.runtime.lastError.message);
-						else {
-							loadBookmarks(results);
-							// searchResults.push(...results.filter(r => !existsIn(r, searchResults)));
-							// if (searchResults.filter(r => existsIn(r, results)))
-							// 	results.map(r => searchResults.push(r));
-							// console.log(...results.filter(r => existsIn(r, searchResults)));
-						}
-					});
+								console.log(obj.url[j].key);
+								console.log(results);
+								// searchResults.push(...results.filter(r => !existsIn(r, searchResults)));
+								// if (searchResults.filter(r => existsIn(r, results)))
+								// 	results.map(r => searchResults.push(r));
+								// console.log(...results.filter(r => existsIn(r, searchResults)));
+							}
+						});
+					}
 				}
 			}
 
@@ -397,11 +410,16 @@ function searchTags() {
 
 }
 
-// find if t already in bookmarkArr
-function existsIn(t, bookmarkArr) {
-	for (let i = 0; i < bookmarkArr.length; i++)
-		if (t.id === bookmarkArr[i].id || t.title === bookmarkArr[i].title || t.url === bookmarkArr[i].url)
-			return true;
+/*
+	-helper function to find if t already in bookmarkArr
+	-params: 
+		-t
+		-bookmarkArr
+*/
+// function existsIn(t, bookmarkArr) {
+// 	for (let i = 0; i < bookmarkArr.length; i++)
+// 		if (t.id === bookmarkArr[i].id || t.title === bookmarkArr[i].title || t.url === bookmarkArr[i].url)
+// 			return true;
 
-	return false;
-}
+// 	return false;
+// }
